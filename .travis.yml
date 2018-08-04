@@ -8,3 +8,12 @@ rust:
 script:
     - cargo build --verbose --all
     - cargo test --verbose --all
+
+matrix:
+    include:
+        - before_script:
+            - pip3 install pipenv
+            - (cd tests; pipenv install)
+          script:
+            - cd tests
+            - pipenv run pytest
