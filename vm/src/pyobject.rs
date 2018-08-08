@@ -6,6 +6,7 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::ops::{Add, Div, Mul, Sub, Rem};
+use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 use super::vm::VirtualMachine;
 
@@ -165,6 +166,12 @@ impl Default for PyObject {
             typ: None,
             // dict: HashMap::new(),
         }
+    }
+}
+
+impl Hash for PyObject {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.kind.hash(state);
     }
 }
 
@@ -339,6 +346,42 @@ impl fmt::Debug for PyObjectKind {
             &PyObjectKind::None => write!(f, "None"),
             &PyObjectKind::Class { name: _ } => write!(f, "class"),
             &PyObjectKind::RustFunction { function: _ } => write!(f, "rust function"),
+        }
+    }
+}
+
+impl Hash for PyObjectKind {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            &PyObjectKind::String { ref value } => value.hash(state),
+            &PyObjectKind::Integer { ref value } => value.hash(state),
+            &PyObjectKind::Boolean { ref value } => value.hash(state),
+            &PyObjectKind::List { ref elements } | &PyObjectKind::Tuple { ref elements } => {
+                for element in elements {
+                    element.borrow().hash(state)
+                }
+            }
+            &PyObjectKind::Iterator {
+                ref position,
+                ref iterated_obj,
+            } => {
+                position.hash(state);
+                iterated_obj.borrow().hash(state)
+            }
+            &PyObjectKind::Slice {
+                ref start,
+                ref stop,
+                ref step,
+            } => {
+                start.hash(state);
+                stop.hash(state);
+                step.hash(state)
+            }
+            &PyObjectKind::NameError { ref name } => name.hash(state),
+            &PyObjectKind::Module { ref name, ref dict } => name.hash(state),
+            &PyObjectKind::None => "None".hash(state),
+            &PyObjectKind::Class { ref name } => name.hash(state),
+            ref kind => panic!("hashing not yet supported for: {:?}", kind),
         }
     }
 }
