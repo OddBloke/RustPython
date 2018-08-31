@@ -955,8 +955,7 @@ impl VirtualMachine {
 
 #[cfg(test)]
 mod tests {
-    use super::super::objint;
-    use super::objstr;
+    use super::super::pyobject::FromPyObject;
     use super::VirtualMachine;
 
     #[test]
@@ -965,8 +964,7 @@ mod tests {
         let a = vm.ctx.new_int(33);
         let b = vm.ctx.new_int(12);
         let res = vm._add(a, b).unwrap();
-        let value = objint::get_value(res);
-        assert_eq!(value, 45);
+        assert_eq!(i32::from_pyobject(&res), 45);
     }
 
     #[test]
@@ -975,7 +973,7 @@ mod tests {
         let a = vm.ctx.new_str(String::from("Hello "));
         let b = vm.ctx.new_int(4);
         let res = vm._mul(a, b).unwrap();
-        let value = objstr::get_value(&res);
+        let value = String::from_pyobject(&res);
         assert_eq!(value, String::from("Hello Hello Hello Hello "))
     }
 }

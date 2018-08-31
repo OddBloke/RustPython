@@ -1,23 +1,13 @@
-use super::objint;
 use super::objtype;
 use super::pyobject::{
-    AttributeProtocol, PyContext, PyFuncArgs, PyObjectKind, PyObjectRef, PyResult, TypeProtocol,
+    AttributeProtocol, FromPyObject, PyContext, PyFuncArgs, PyObjectRef, PyResult, TypeProtocol,
 };
 use super::vm::VirtualMachine;
 
 fn str(vm: &mut VirtualMachine, args: PyFuncArgs) -> Result<PyObjectRef, PyObjectRef> {
     arg_check!(vm, args, required = [(float, Some(vm.ctx.float_type()))]);
-    let v = get_value(float.clone());
+    let v = f64::from_pyobject(float);
     Ok(vm.new_str(v.to_string()))
-}
-
-// Retrieve inner float value:
-pub fn get_value(obj: PyObjectRef) -> f64 {
-    if let PyObjectKind::Float { value } = &obj.borrow().kind {
-        *value
-    } else {
-        panic!("Inner error getting float");
-    }
 }
 
 fn float_add(vm: &mut VirtualMachine, args: PyFuncArgs) -> PyResult {
@@ -27,11 +17,11 @@ fn float_add(vm: &mut VirtualMachine, args: PyFuncArgs) -> PyResult {
         required = [(i, Some(vm.ctx.float_type())), (i2, None)]
     );
 
-    let v1 = get_value(i.clone());
+    let v1 = f64::from_pyobject(i);
     if objtype::isinstance(i2.clone(), vm.ctx.float_type()) {
-        Ok(vm.ctx.new_float(v1 + get_value(i2.clone())))
+        Ok(vm.ctx.new_float(v1 + f64::from_pyobject(i2)))
     } else if objtype::isinstance(i2.clone(), vm.ctx.int_type()) {
-        Ok(vm.ctx.new_float(v1 + objint::get_value(i2.clone()) as f64))
+        Ok(vm.ctx.new_float(v1 + f64::from_pyobject(i2)))
     } else {
         Err(vm.new_type_error(format!("Cannot add {:?} and {:?}", i, i2)))
     }
@@ -44,11 +34,11 @@ fn float_sub(vm: &mut VirtualMachine, args: PyFuncArgs) -> PyResult {
         required = [(i, Some(vm.ctx.float_type())), (i2, None)]
     );
 
-    let v1 = get_value(i.clone());
+    let v1 = f64::from_pyobject(i);
     if objtype::isinstance(i2.clone(), vm.ctx.float_type()) {
-        Ok(vm.ctx.new_float(v1 - get_value(i2.clone())))
+        Ok(vm.ctx.new_float(v1 - f64::from_pyobject(i2)))
     } else if objtype::isinstance(i2.clone(), vm.ctx.int_type()) {
-        Ok(vm.ctx.new_float(v1 - objint::get_value(i2.clone()) as f64))
+        Ok(vm.ctx.new_float(v1 - f64::from_pyobject(i2)))
     } else {
         Err(vm.new_type_error(format!("Cannot add {:?} and {:?}", i, i2)))
     }
@@ -61,12 +51,12 @@ fn float_pow(vm: &mut VirtualMachine, args: PyFuncArgs) -> PyResult {
         required = [(i, Some(vm.ctx.float_type())), (i2, None)]
     );
 
-    let v1 = get_value(i.clone());
+    let v1 = f64::from_pyobject(i);
     if objtype::isinstance(i2.clone(), vm.ctx.float_type()) {
-        let result = v1.powf(get_value(i2.clone()));
+        let result = v1.powf(f64::from_pyobject(i2));
         Ok(vm.ctx.new_float(result))
     } else if objtype::isinstance(i2.clone(), vm.ctx.int_type()) {
-        let result = v1.powf(objint::get_value(i2.clone()) as f64);
+        let result = v1.powf(f64::from_pyobject(i2));
         Ok(vm.ctx.new_float(result))
     } else {
         Err(vm.new_type_error(format!("Cannot add {:?} and {:?}", i, i2)))

@@ -1,8 +1,8 @@
 use super::objsequence::PySliceableSequence;
-use super::objstr;
 use super::objtype;
 use super::pyobject::{
-    AttributeProtocol, PyContext, PyFuncArgs, PyObjectKind, PyObjectRef, PyResult, TypeProtocol,
+    AttributeProtocol, FromPyObject, PyContext, PyFuncArgs, PyObjectKind, PyObjectRef, PyResult,
+    TypeProtocol,
 };
 use super::vm::VirtualMachine;
 
@@ -58,7 +58,7 @@ fn list_str(vm: &mut VirtualMachine, args: PyFuncArgs) -> PyResult {
     let mut str_parts = vec![];
     for elem in elements {
         match vm.to_str(elem) {
-            Ok(s) => str_parts.push(objstr::get_value(&s)),
+            Ok(s) => str_parts.push(String::from_pyobject(&s)),
             Err(err) => return Err(err),
         }
     }

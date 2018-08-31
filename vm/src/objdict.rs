@@ -1,8 +1,7 @@
-use super::objstr;
 use super::objtype;
 use super::pyobject::{
-    AttributeProtocol, PyContext, PyFuncArgs, PyObject, PyObjectKind, PyObjectRef, PyResult,
-    TypeProtocol,
+    AttributeProtocol, FromPyObject, PyContext, PyFuncArgs, PyObject, PyObjectKind, PyObjectRef,
+    PyResult, TypeProtocol,
 };
 use super::vm::VirtualMachine;
 use std::collections::HashMap;
@@ -52,7 +51,7 @@ fn dict_str(vm: &mut VirtualMachine, args: PyFuncArgs) -> PyResult {
     for elem in elements {
         match vm.to_str(elem.1) {
             Ok(s) => {
-                let value_str = objstr::get_value(&s);
+                let value_str = String::from_pyobject(&s);
                 str_parts.push(format!("{}: {}", elem.0, value_str));
             }
             Err(err) => return Err(err),

@@ -5,11 +5,10 @@ use std::io::{self, Write};
 
 use super::compile;
 use super::objbool;
-use super::objstr;
 use super::objtype;
 use super::pyobject::{
-    AttributeProtocol, DictProtocol, IdProtocol, PyContext, PyFuncArgs, PyObject, PyObjectKind,
-    PyObjectRef, PyResult, Scope, TypeProtocol,
+    AttributeProtocol, DictProtocol, FromPyObject, IdProtocol, PyContext, PyFuncArgs, PyObject,
+    PyObjectKind, PyObjectRef, PyResult, Scope, TypeProtocol,
 };
 use super::vm::VirtualMachine;
 
@@ -263,7 +262,7 @@ pub fn builtin_print(vm: &mut VirtualMachine, args: PyFuncArgs) -> PyResult {
     trace!("print called with {:?}", args);
     for a in args.args {
         let s = match vm.to_str(a) {
-            Ok(v) => objstr::get_value(&v),
+            Ok(v) => String::from_pyobject(&v),
             Err(err) => return Err(err),
         };
         print!("{} ", s);

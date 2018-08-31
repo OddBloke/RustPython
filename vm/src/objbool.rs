@@ -1,6 +1,7 @@
 use super::objtype;
 use super::pyobject::{
-    AttributeProtocol, PyContext, PyFuncArgs, PyObjectKind, PyObjectRef, PyResult, TypeProtocol,
+    AttributeProtocol, FromPyObject, PyContext, PyFuncArgs, PyObjectKind, PyObjectRef, PyResult,
+    TypeProtocol,
 };
 use super::vm::VirtualMachine;
 
@@ -37,18 +38,9 @@ pub fn init(context: &PyContext) {
     bool_type.set_attr("__str__", context.new_rustfunc(bool_str));
 }
 
-// Retrieve inner int value:
-pub fn get_value(obj: &PyObjectRef) -> bool {
-    if let PyObjectKind::Boolean { value } = &obj.borrow().kind {
-        *value
-    } else {
-        panic!("Inner error getting inner boolean");
-    }
-}
-
 fn bool_str(vm: &mut VirtualMachine, args: PyFuncArgs) -> Result<PyObjectRef, PyObjectRef> {
     arg_check!(vm, args, required = [(obj, Some(vm.ctx.bool_type()))]);
-    let v = get_value(obj);
+    let v = bool::from_pyobject(obj);
     let s = if v {
         "True".to_string()
     } else {

@@ -802,6 +802,48 @@ impl Ord for PyObject {
     }
 }
 
+pub trait FromPyObject {
+    fn from_pyobject(obj: &PyObjectRef) -> Self;
+}
+
+impl FromPyObject for i32 {
+    fn from_pyobject(obj: &PyObjectRef) -> i32 {
+        if let PyObjectKind::Integer { value } = &obj.borrow().kind {
+            *value
+        } else {
+            panic!("Inner error getting int");
+        }
+    }
+}
+
+impl FromPyObject for f64 {
+    fn from_pyobject(obj: &PyObjectRef) -> f64 {
+        match &obj.borrow().kind {
+            PyObjectKind::Integer { value } => *value as f64,
+            PyObjectKind::Float { value } => *value,
+            _ => panic!("Inner error getting f64"),
+        }
+    }
+}
+
+impl FromPyObject for String {
+    fn from_pyobject(obj: &PyObjectRef) -> String {
+        match &obj.borrow().kind {
+            PyObjectKind::String { value } => value.clone(),
+            _ => panic!("Inner error getting string"),
+        }
+    }
+}
+
+impl FromPyObject for bool {
+    fn from_pyobject(obj: &PyObjectRef) -> bool {
+        match &obj.borrow().kind {
+            PyObjectKind::Boolean { value } => *value,
+            _ => panic!("Inner error getting string"),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::PyContext;
